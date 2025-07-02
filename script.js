@@ -25,9 +25,40 @@ const sugestoes = {
   ]
 };
 
+// Função para pegar o storage com as sugestões já mostradas, ou iniciar vazio
+function getMostradas() {
+  const data = localStorage.getItem('sugestoesMostradas');
+  return data ? JSON.parse(data) : {5: [], 15: [], 30: [], 60: []};
+}
+
+// Função para salvar as sugestões mostradas no localStorage
+function salvarMostradas(obj) {
+  localStorage.setItem('sugestoesMostradas', JSON.stringify(obj));
+}
+
 function mostrarSugestao() {
   const tempo = document.getElementById("tempo").value;
   const lista = sugestoes[tempo];
-  const sugestaoAleatoria = lista[Math.floor(Math.random() * lista.length)];
+  
+  let mostradas = getMostradas();
+
+  // Filtrar sugestões que ainda não foram mostradas
+  const naoMostradas = lista.filter(sug => !mostradas[tempo].includes(sug));
+
+  let sugestaoAleatoria;
+
+  if (naoMostradas.length === 0) {
+    // Se todas já foram mostradas, reinicia a lista para esse tempo
+    mostradas[tempo] = [];
+    salvarMostradas(mostradas);
+    sugestaoAleatoria = lista[Math.floor(Math.random() * lista.length)];
+  } else {
+    // Pega uma aleatória entre as que não saíram ainda
+    sugestaoAleatoria = naoMostradas[Math.floor(Math.random() * naoMostradas.length)];
+    // Marca como mostrada
+    mostradas[tempo].push(sugestaoAleatoria);
+    salvarMostradas(mostradas);
+  }
+
   document.getElementById("sugestao").innerText = sugestaoAleatoria;
 }
